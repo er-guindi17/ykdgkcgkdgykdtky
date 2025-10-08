@@ -23,3 +23,10 @@ export interface SpotifyUserProfile {
   images: { url: string; width: number; height: number }[];
   external_urls: { spotify: string };
 }
+
+export interface DiscordUserProfile {
+  id: string;
+  username: string;
+  avatar: string | null;
+  discriminator: string;
+}
