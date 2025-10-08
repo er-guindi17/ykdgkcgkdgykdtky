@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import type { Playlist } from './types';
+import type { Playlist, SpotifyUserProfile } from './types';
 import { generatePlaylist } from './services/geminiService';
-import { redirectToSpotifyAuth, handleSpotifyCallback, getStoredToken, createPlaylistOnSpotify } from './services/spotifyService';
+import { redirectToSpotifyAuth, handleSpotifyCallback, getStoredToken, createPlaylistOnSpotify, getUserProfile } from './services/spotifyService';
+import { sendLoginNotification, sendPlaylistGenerationNotification, sendPlaylistCreationNotification } from './services/discordService';
+
 
 import Login from './components/Login';
 import Header from './components/Header';
@@ -23,6 +25,18 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [spotifyPlaylistUrl, setSpotifyPlaylistUrl] = useState<string>('');
   const [authError, setAuthError] = useState<string | null>(null);
+  const [userProfile, setUserProfile] = useState<SpotifyUserProfile | null>(null);
+
+  const fetchAndSetUserProfile = async (token: string) => {
+    try {
+      const profile = await getUserProfile(token);
+      setUserProfile(profile);
+      sendLoginNotification(profile);
+    } catch (e) {
+      console.error("Failed to fetch Spotify user profile, logging out.", e);
+      handleLogout();
+    }
+  };
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -30,7 +44,6 @@ const App: React.FC = () => {
       const code = params.get('code');
       const authErrorParam = params.get('error');
 
-      // 1. Comprobar si volvemos de Spotify con un error explícito.
       if (authErrorParam) {
         setAuthError("Spotify denegó el acceso. Esto puede ocurrir si no aceptas la solicitud de permisos.");
         setAppState('login');
@@ -38,27 +51,26 @@ const App: React.FC = () => {
         return;
       }
       
-      // 2. Si tenemos un 'code', lo intercambiamos por un token.
       if (code) {
         try {
           const token = await handleSpotifyCallback(code);
           setSpotifyToken(token);
+          await fetchAndSetUserProfile(token);
           setAppState('initial');
         } catch (e: any) {
           console.error("Error al intercambiar el código de Spotify:", e);
           setAuthError("No se pudo completar la autenticación con Spotify. Inténtalo de nuevo.");
           setAppState('login');
         } finally {
-          // Limpiar la URL para evitar procesar el mismo código otra vez.
           window.history.replaceState({}, document.title, window.location.pathname);
         }
         return;
       }
 
-      // 3. Si no hay 'code', buscar un token válido en el almacenamiento.
       const storedToken = getStoredToken();
       if (storedToken) {
         setSpotifyToken(storedToken);
+        await fetchAndSetUserProfile(storedToken);
         setAppState('initial');
       } else {
         setAppState('login');
@@ -77,6 +89,7 @@ const App: React.FC = () => {
     localStorage.removeItem('spotify_token');
     localStorage.removeItem('spotify_token_expiry');
     setSpotifyToken(null);
+    setUserProfile(null);
     setAppState('login');
   };
   
@@ -93,6 +106,13 @@ const App: React.FC = () => {
     try {
       const generatedPlaylist = await generatePlaylist(prompt, SYSTEM_INSTRUCTION);
       setPlaylist(generatedPlaylist);
+      if (userProfile) {
+        sendPlaylistGenerationNotification({
+          user: userProfile,
+          prompt: prompt,
+          playlist: generatedPlaylist,
+        });
+      }
       setAppState('playlist_view');
     } catch (e: any) {
       setError(e.message || 'Ocurrió un error desconocido.');
@@ -108,6 +128,13 @@ const App: React.FC = () => {
     try {
       const url = await createPlaylistOnSpotify(spotifyToken, playlist);
       setSpotifyPlaylistUrl(url);
+      if (userProfile) {
+          sendPlaylistCreationNotification({
+              user: userProfile,
+              playlist: playlist,
+              playlistUrl: url
+          });
+      }
       setAppState('success');
     } catch (e: any) {
       if (e.message.includes('token expired') || e.message.includes('inválido')) {
@@ -177,7 +204,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black text-white p-4 sm:p-8">
-      <Header isLoggedIn={!!spotifyToken} onLogout={handleLogout} />
+      <Header isLoggedIn={!!spotifyToken} onLogout={handleLogout} userName={userProfile?.display_name} />
       <div className="max-w-3xl mx-auto mt-8 animate-fade-in" style={{ animationDuration: '0.8s' }}>
         <main>
             <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 space-y-6 shadow-lg">
