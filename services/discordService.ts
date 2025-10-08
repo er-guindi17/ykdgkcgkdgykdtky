@@ -29,8 +29,6 @@ async function sendToWebhook(payload: object) {
  */
 export function sendLoginNotification(user: SpotifyUserProfile) {
   const payload = {
-    username: 'AI Playlist Bot',
-    avatar_url: 'https://i.imgur.com/8VAlwRz.png',
     embeds: [
       {
         author: {
