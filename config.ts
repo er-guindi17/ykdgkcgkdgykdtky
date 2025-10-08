@@ -10,9 +10,9 @@ export const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID || 'f99639a42c1d4
 // 1. DISCORD_CLIENT_ID: Crea una App en https://discord.com/developers/applications -> OAuth2 -> General -> Client ID
 // 2. DISCORD_GUILD_ID: Activa el Modo Desarrollador en Discord (Ajustes > Avanzado), luego haz clic derecho en tu servidor -> Copiar ID del servidor
 // 3. DISCORD_INVITE_URL: Crea un enlace de invitación permanente para tu servidor.
-export const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID || ''; 
-export const DISCORD_GUILD_ID = process.env.DISCORD_GUILD_ID || '';
-export const DISCORD_INVITE_URL = process.env.DISCORD_INVITE_URL || '';
+export const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID || '1412026180470571100'; 
+export const DISCORD_GUILD_ID = process.env.DISCORD_GUILD_ID || '1412114615634231499';
+export const DISCORD_INVITE_URL = process.env.DISCORD_INVITE_URL || 'https://discord.gg/AA8ZbjwGkc';
 
 
 // --- (Opcional) Configuración de Webhook de Discord ---
