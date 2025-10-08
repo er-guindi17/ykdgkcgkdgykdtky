@@ -16,3 +16,10 @@ export interface SpotifyArtist {
   name: string;
   images: { url: string; width: number; height: number }[];
 }
+
+export interface SpotifyUserProfile {
+  id: string;
+  display_name: string;
+  images: { url: string; width: number; height: number }[];
+  external_urls: { spotify: string };
+}
