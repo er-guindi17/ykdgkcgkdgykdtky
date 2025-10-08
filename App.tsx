@@ -1,0 +1,194 @@
+import React, { useState, useEffect } from 'react';
+import type { Playlist } from './types';
+import { generatePlaylist } from './services/geminiService';
+import { redirectToSpotifyAuth, handleSpotifyCallback, getStoredToken, createPlaylistOnSpotify } from './services/spotifyService';
+
+import Login from './components/Login';
+import Header from './components/Header';
+import PromptForm from './components/PromptForm';
+import InitialState from './components/InitialState';
+import Loader from './components/Loader';
+import PlaylistView from './components/PlaylistView';
+import SuccessView from './components/SuccessView';
+
+type AppState = 'auth_check' | 'login' | 'initial' | 'loading_playlist' | 'playlist_view' | 'creating_spotify' | 'success' | 'error';
+
+const SYSTEM_INSTRUCTION = "Eres un experto DJ y musicólogo. Tu tarea es crear una playlist excepcional basada en la petición del usuario. Debes seguir todas las reglas de formato de salida JSON. Sé creativo con los nombres y descripciones de las playlists. La selección de canciones debe ser diversa pero coherente con el tema. Asegúrate de que las canciones existan realmente y sean de los artistas correctos. REGLA IMPORTANTE: Si un nombre de artista en el prompt del usuario está entre comillas dobles (por ejemplo, \"JC Reyes\"), DEBES usar canciones de ESE artista exacto. No uses artistas con nombres similares.";
+
+const App: React.FC = () => {
+  const [spotifyToken, setSpotifyToken] = useState<string | null>(null);
+  const [appState, setAppState] = useState<AppState>('auth_check'); 
+  const [playlist, setPlaylist] = useState<Playlist | null>(null);
+  const [lastPrompt, setLastPrompt] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
+  const [spotifyPlaylistUrl, setSpotifyPlaylistUrl] = useState<string>('');
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const initializeAuth = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      const authErrorParam = params.get('error');
+
+      // 1. Comprobar si volvemos de Spotify con un error explícito.
+      if (authErrorParam) {
+        setAuthError("Spotify denegó el acceso. Esto puede ocurrir si no aceptas la solicitud de permisos.");
+        setAppState('login');
+        window.history.replaceState({}, document.title, window.location.pathname);
+        return;
+      }
+      
+      // 2. Si tenemos un 'code', lo intercambiamos por un token.
+      if (code) {
+        try {
+          const token = await handleSpotifyCallback(code);
+          setSpotifyToken(token);
+          setAppState('initial');
+        } catch (e: any) {
+          console.error("Error al intercambiar el código de Spotify:", e);
+          setAuthError("No se pudo completar la autenticación con Spotify. Inténtalo de nuevo.");
+          setAppState('login');
+        } finally {
+          // Limpiar la URL para evitar procesar el mismo código otra vez.
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+        return;
+      }
+
+      // 3. Si no hay 'code', buscar un token válido en el almacenamiento.
+      const storedToken = getStoredToken();
+      if (storedToken) {
+        setSpotifyToken(storedToken);
+        setAppState('initial');
+      } else {
+        setAppState('login');
+      }
+    };
+
+    initializeAuth();
+  }, []);
+
+  const handleLogin = () => {
+    setAuthError(null);
+    redirectToSpotifyAuth();
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('spotify_token');
+    localStorage.removeItem('spotify_token_expiry');
+    setSpotifyToken(null);
+    setAppState('login');
+  };
+  
+  const handlePromptSubmit = async (prompt: string) => {
+    if (!prompt.trim()) {
+        setError("Por favor, introduce una descripción para tu playlist.");
+        setAppState('error');
+        return;
+    }
+    setLastPrompt(prompt);
+    setAppState('loading_playlist');
+    setError(null);
+    setPlaylist(null);
+    try {
+      const generatedPlaylist = await generatePlaylist(prompt, SYSTEM_INSTRUCTION);
+      setPlaylist(generatedPlaylist);
+      setAppState('playlist_view');
+    } catch (e: any) {
+      setError(e.message || 'Ocurrió un error desconocido.');
+      setAppState('error');
+    }
+  };
+
+  const handleCreateSpotifyPlaylist = async () => {
+    if (!playlist || !spotifyToken) return;
+
+    setAppState('creating_spotify');
+    setError(null);
+    try {
+      const url = await createPlaylistOnSpotify(spotifyToken, playlist);
+      setSpotifyPlaylistUrl(url);
+      setAppState('success');
+    } catch (e: any) {
+      if (e.message.includes('token expired') || e.message.includes('inválido')) {
+          handleLogout();
+          return;
+      }
+      setError(e.message || 'No se pudo crear la playlist en Spotify.');
+      setAppState('error');
+    }
+  };
+
+  const handleRegenerate = () => {
+      handlePromptSubmit(lastPrompt);
+  };
+
+  const handleReset = () => {
+    setPlaylist(null);
+    setLastPrompt('');
+    setSpotifyPlaylistUrl('');
+    setError(null);
+    setAppState('initial');
+  };
+  
+  const renderContent = () => {
+    switch(appState) {
+        case 'loading_playlist':
+            return <Loader message="Generando tu playlist... La IA está pensando." />;
+        case 'initial':
+            return <InitialState />;
+        case 'playlist_view':
+            return playlist ? <PlaylistView playlist={playlist} onCreateSpotify={handleCreateSpotifyPlaylist} onRegenerate={handleRegenerate} isLoading={false} /> : <InitialState />;
+        case 'creating_spotify':
+            return playlist ? <PlaylistView playlist={playlist} onCreateSpotify={() => {}} onRegenerate={() => {}} isLoading={true} /> : <Loader message="Creando playlist en Spotify..." />;
+        case 'success':
+            return <SuccessView playlistName={playlist?.playlistName || 'Tu Playlist'} playlistUrl={spotifyPlaylistUrl} onReset={handleReset} />;
+        case 'error':
+            return (
+                <div className="text-center p-8 bg-red-900/30 border border-red-700 rounded-xl animate-scale-in">
+                    <h3 className="text-2xl font-bold text-red-300">¡Ups! Algo salió mal</h3>
+                    <p className="mt-2 text-red-400">{error}</p>
+                    <button onClick={handleReset} className="mt-6 bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+                        Intentar de Nuevo
+                    </button>
+                </div>
+            );
+        default:
+            return <InitialState />;
+    }
+  };
+  
+  if (appState === 'auth_check') {
+    return (
+        <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+            <Loader message="Verificando autenticación..." />
+        </div>
+    );
+  }
+
+  if (appState === 'login') {
+    return <Login onLogin={handleLogin} error={authError} />;
+  }
+
+  if (!spotifyToken) {
+      // Este estado debería ser cubierto por los anteriores, pero es un fallback.
+      return <Login onLogin={handleLogin} error={authError} />;
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black text-white p-4 sm:p-8">
+      <Header isLoggedIn={!!spotifyToken} onLogout={handleLogout} />
+      <div className="max-w-3xl mx-auto mt-8 animate-fade-in" style={{ animationDuration: '0.8s' }}>
+        <main>
+            <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 space-y-6 shadow-lg">
+                <PromptForm onSubmit={handlePromptSubmit} isLoading={appState === 'loading_playlist'} spotifyToken={spotifyToken} />
+                <hr className="border-gray-700" />
+                {renderContent()}
+            </div>
+        </main>
+      </div>
+    </div>
+  );
+};
+
+export default App;

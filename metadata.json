@@ -1,0 +1,5 @@
+{
+  "name": "Copy of AI Playlist Generator for Spotify",
+  "description": "An intelligent web application that uses AI to generate personalized Spotify playlists based on your mood, activities, or any creative prompt you can think of.",
+  "requestFramePermissions": []
+}
