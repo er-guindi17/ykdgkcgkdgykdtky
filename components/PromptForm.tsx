@@ -8,15 +8,17 @@ interface PromptFormProps {
   onSubmit: (prompt: string) => void;
   isLoading: boolean;
   spotifyToken: string | null;
+  isVerified: boolean;
 }
 
-const PromptForm: React.FC<PromptFormProps> = ({ onSubmit, isLoading, spotifyToken }) => {
+const PromptForm: React.FC<PromptFormProps> = ({ onSubmit, isLoading, spotifyToken, isVerified }) => {
   const [prompt, setPrompt] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isVerified) return;
     onSubmit(prompt);
   };
 
@@ -54,7 +56,7 @@ const PromptForm: React.FC<PromptFormProps> = ({ onSubmit, isLoading, spotifyTok
            <button
             type="button"
             onClick={() => setIsModalOpen(true)}
-            disabled={isLoading || !spotifyToken}
+            disabled={isLoading || !spotifyToken || !isVerified}
             className="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-1.5 px-3 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 transition-colors"
           >
             <UserIcon />
@@ -69,12 +71,12 @@ const PromptForm: React.FC<PromptFormProps> = ({ onSubmit, isLoading, spotifyTok
             onChange={(e) => setPrompt(e.target.value)}
             placeholder="Ej: Quiero una playlist con música tipo 'JC Reyes'"
             className="w-full h-28 p-4 bg-gray-800 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200 resize-none text-gray-200 placeholder-gray-500"
-            disabled={isLoading}
+            disabled={isLoading || !isVerified}
           />
         </div>
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={isLoading || !isVerified}
           className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-green-500"
         >
           {isLoading ? (
