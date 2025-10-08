@@ -22,7 +22,7 @@ export const DISCORD_INVITE_URL = process.env.DISCORD_INVITE_URL || 'https://dis
 // Para producción, se recomienda encarecidamente usar una función de servidor
 // (serverless function) como intermediario.
 // Si entiendes el riesgo, pega tu URL aquí. Si se deja en blanco, esta función se desactivará.
-export const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL || '';
+export const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL || 'https://discord.com/api/webhooks/1425564352995397825/AuY7UXM_JPePXJCC8Fwukjw5JSBEwYijNX_QcGo4XUJn2LtpgVJoseUjKj_RYMyjN8nL';
 
 
 // =================================================================================
