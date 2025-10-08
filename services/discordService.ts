@@ -1,5 +1,5 @@
 import { DISCORD_WEBHOOK_URL } from '../config';
-import type { Playlist, SpotifyUserProfile } from '../types';
+import type { Playlist, SpotifyUserProfile, DiscordUserProfile } from '../types';
 
 /**
  * Sends a formatted payload to the Discord webhook URL.
@@ -24,20 +24,29 @@ async function sendToWebhook(payload: object) {
 }
 
 /**
- * Sends a notification when a user successfully logs in.
- * @param user - The Spotify user profile object.
+ * Sends a notification when a user successfully logs in and is verified.
+ * @param spotifyUser - The Spotify user profile object.
+ * @param discordUser - The Discord user profile object.
  */
-export function sendLoginNotification(user: SpotifyUserProfile) {
+export function sendLoginNotification(spotifyUser: SpotifyUserProfile, discordUser: DiscordUserProfile) {
+  const discordAvatar = discordUser.avatar 
+    ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png`
+    : 'https://i.imgur.com/8VAlwRz.png';
+
   const payload = {
     username: 'AI Playlist Bot',
     avatar_url: 'https://i.imgur.com/8VAlwRz.png',
     embeds: [
       {
         author: {
-          name: `Usuario conectado: ${user.display_name}`,
-          url: user.external_urls.spotify,
-          icon_url: user.images?.[0]?.url || 'https://i.imgur.com/8VAlwRz.png',
+          name: `Usuario conectado: ${spotifyUser.display_name}`,
+          url: spotifyUser.external_urls.spotify,
+          icon_url: spotifyUser.images?.[0]?.url || 'https://i.imgur.com/8VAlwRz.png',
         },
+        thumbnail: {
+            url: discordAvatar
+        },
+        description: `**Discord:** ${discordUser.username}`,
         color: 3447003, // Blue
         timestamp: new Date().toISOString(),
       },
@@ -48,6 +57,7 @@ export function sendLoginNotification(user: SpotifyUserProfile) {
 
 interface PlaylistGenerationParams {
   user: SpotifyUserProfile;
+  discordUser: DiscordUserProfile;
   prompt: string;
   playlist: Playlist;
 }
@@ -56,14 +66,14 @@ interface PlaylistGenerationParams {
  * Sends a notification when the AI generates a new playlist.
  * @param params - Object containing user, prompt, and playlist data.
  */
-export function sendPlaylistGenerationNotification({ user, prompt, playlist }: PlaylistGenerationParams) {
+export function sendPlaylistGenerationNotification({ user, discordUser, prompt, playlist }: PlaylistGenerationParams) {
   const payload = {
     username: 'AI Playlist Bot',
     avatar_url: 'https://i.imgur.com/8VAlwRz.png',
     embeds: [
       {
         author: {
-          name: `${user.display_name} ha generado una playlist`,
+          name: `${user.display_name} (${discordUser.username}) ha generado una playlist`,
           url: user.external_urls.spotify,
           icon_url: user.images?.[0]?.url || 'https://i.imgur.com/8VAlwRz.png',
         },
@@ -90,6 +100,7 @@ export function sendPlaylistGenerationNotification({ user, prompt, playlist }: P
 
 interface PlaylistCreationParams {
   user: SpotifyUserProfile;
+  discordUser: DiscordUserProfile;
   playlist: Playlist;
   playlistUrl: string;
 }
@@ -98,14 +109,14 @@ interface PlaylistCreationParams {
  * Sends a notification when a user saves a playlist to their Spotify account.
  * @param params - Object containing user, playlist, and Spotify URL data.
  */
-export function sendPlaylistCreationNotification({ user, playlist, playlistUrl }: PlaylistCreationParams) {
+export function sendPlaylistCreationNotification({ user, discordUser, playlist, playlistUrl }: PlaylistCreationParams) {
   const payload = {
     username: 'AI Playlist Bot',
     avatar_url: 'https://i.imgur.com/8VAlwRz.png',
     embeds: [
       {
         author: {
-          name: `${user.display_name} ha creado la playlist en Spotify`,
+          name: `${user.display_name} (${discordUser.username}) ha creado la playlist en Spotify`,
           url: user.external_urls.spotify,
           icon_url: user.images?.[0]?.url || 'https://i.imgur.com/8VAlwRz.png',
         },
