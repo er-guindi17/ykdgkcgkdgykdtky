@@ -4,17 +4,15 @@ interface HeaderProps {
   isLoggedIn: boolean;
   onLogout: () => void;
   userName?: string;
-  discordUserName?: string;
 }
 
-const Header: React.FC<HeaderProps> = ({ isLoggedIn, onLogout, userName, discordUserName }) => {
+const Header: React.FC<HeaderProps> = ({ isLoggedIn, onLogout, userName }) => {
   return (
     <header className="text-center relative">
        <div className="absolute top-0 right-0 animate-fade-in z-10 flex items-center gap-4">
-        {isLoggedIn && (userName || discordUserName) && (
+        {isLoggedIn && userName && (
           <span className="text-gray-400 text-sm hidden sm:block">
-            Hola, <span className="font-semibold text-gray-300">{userName || 'Usuario'}</span>
-            {discordUserName && ` (@${discordUserName})`}
+            Hola, <span className="font-semibold text-gray-300">{userName}</span>
           </span>
         )}
         {isLoggedIn && (
