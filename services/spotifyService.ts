@@ -1,5 +1,5 @@
 import { REDIRECT_URI, SPOTIFY_SCOPES, SPOTIFY_CLIENT_ID } from '../config';
-import type { Playlist, Song, SpotifyArtist } from '../types';
+import type { Playlist, Song, SpotifyArtist, SpotifyUserProfile } from '../types';
 
 // --- Funciones para el flujo de autenticación PKCE ---
 
@@ -92,7 +92,7 @@ export function getStoredToken(): string | null {
 }
 
 
-// --- Funciones de la API de Spotify (sin cambios) ---
+// --- Funciones de la API de Spotify ---
 
 async function spotifyApiFetch(endpoint: string, token: string, options: RequestInit = {}) {
     const response = await fetch(`https://api.spotify.com/v1${endpoint}`, {
@@ -138,9 +138,9 @@ export async function getArtistsByIds(token: string, ids: string[]): Promise<Spo
     return data.artists || [];
 }
 
-async function getUserId(token: string): Promise<string> {
+export async function getUserProfile(token: string): Promise<SpotifyUserProfile> {
     const profile = await spotifyApiFetch('/me', token);
-    return profile.id;
+    return profile;
 }
 
 async function findTrackUri(token: string, song: Song): Promise<string | null> {
@@ -201,7 +201,8 @@ async function addTracksToPlaylist(token:string, playlistId: string, trackUris: 
 }
 
 export async function createPlaylistOnSpotify(token: string, playlistData: Playlist): Promise<string> {
-    const userId = await getUserId(token);
+    const userProfile = await getUserProfile(token);
+    const userId = userProfile.id;
     
     const { id: playlistId, url: playlistUrl } = await createPlaylist(token, userId, playlistData.playlistName, playlistData.description);
     
