@@ -56,8 +56,6 @@ interface PlaylistGenerationParams {
  */
 export function sendPlaylistGenerationNotification({ user, prompt, playlist }: PlaylistGenerationParams) {
   const payload = {
-    username: 'AI Playlist Bot',
-    avatar_url: 'https://i.imgur.com/8VAlwRz.png',
     embeds: [
       {
         author: {
@@ -98,8 +96,6 @@ interface PlaylistCreationParams {
  */
 export function sendPlaylistCreationNotification({ user, playlist, playlistUrl }: PlaylistCreationParams) {
   const payload = {
-    username: 'AI Playlist Bot',
-    avatar_url: 'https://i.imgur.com/8VAlwRz.png',
     embeds: [
       {
         author: {
