@@ -78,6 +78,28 @@ const App: React.FC = () => {
     };
 
     initializeAuth();
+
+  // 👇 Añade este script justo aquí
+  const reemplazos = { "Spotify": "Mi Música" /* puedes añadir más */ };
+
+  function reemplazarTexto(node: Node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      let texto = node.textContent || "";
+      for (const [buscar, reemplazar] of Object.entries(reemplazos)) {
+        texto = texto.replaceAll(buscar, reemplazar);
+      }
+      node.textContent = texto;
+    } else {
+      node.childNodes.forEach(reemplazarTexto);
+    }
+  }
+
+  reemplazarTexto(document.body);
+
+  const observer = new MutationObserver(() => reemplazarTexto(document.body));
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  return () => observer.disconnect();
   }, []);
 
   const handleLogin = () => {
