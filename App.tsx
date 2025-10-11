@@ -237,6 +237,7 @@ const App: React.FC = () => {
             </div>
         </main>
       </div>
+      <Analytics />
     </div>
   );
 };
