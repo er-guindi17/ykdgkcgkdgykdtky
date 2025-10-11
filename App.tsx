@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/react"; // 👈 importa analytics
 import React, { useState, useEffect } from 'react';
 import type { Playlist, SpotifyUserProfile } from './types';
 import { generatePlaylist } from './services/geminiService';
@@ -235,7 +236,9 @@ const App: React.FC = () => {
                 {renderContent()}
             </div>
         </main>
-      </div>
+      </div> 
+      {/* 👇 aquí va el componente de analíticas */}
+     <Analytics />
     </div>
   );
 };
