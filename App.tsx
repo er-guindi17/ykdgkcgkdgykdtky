@@ -17,19 +17,6 @@ type AppState = 'auth_check' | 'login' | 'initial' | 'loading_playlist' | 'playl
 
 const SYSTEM_INSTRUCTION = "Eres un DJ profesional y musicólogo experto especializado en música urbana y callejera. Tu misión es crear una playlist excepcional basada en la solicitud del usuario. La playlist debe ser coherente, original y atractiva, reflejando el tema, emoción o contexto que el usuario describa. La selección debe centrarse en artistas con estilo callejero, urbano o trap, como JC Reyes, Luar la L, Hades66, Mora, Anuel AA, entre otros. Incluye solo canciones reales y artistas auténticos y verificados. Si el usuario menciona un artista entre comillas dobles (por ejemplo: \"JC Reyes\"), debes incluir únicamente canciones de ese artista exacto y no de artistas con nombres similares. Si el usuario pide un género, emoción o situación, adapta el tono, ritmo y energía de las canciones a ese contexto. Usa nombres de playlist originales y acordes con la temática. No inventes canciones ni mezcles información de distintos artistas. Además, prioriza canciones que estén de moda, sean populares o hayan sido lanzadas recientemente en la actualidad (año 2025), asegurando que la selección refleje las tendencias más recientes del movimiento urbano y callejero. Asegúrate de que toda la selección mantenga calidad, coherencia y autenticidad. Recuerda que si te dicen que quieren un cantante especifico y solo ese, tienes que poner solo ese cantante no otro.";
 
-import * as Sentry from "@sentry/react";
-
-Sentry.init({
-  dsn: "https://8e2a6d330b669e2b10f2160f6e251f04@o4510168287281152.ingest.de.sentry.io/4510168290689104",
-  // Setting this option to true will send default PII data to Sentry.
-  // For example, automatic IP address collection on events
-  sendDefaultPii: true
-});
-
-const container = document.getElementById(“app”);
-const root = createRoot(container);
-root.render(<App />);
-
 const App: React.FC = () => {
   const [spotifyToken, setSpotifyToken] = useState<string | null>(null);
   const [appState, setAppState] = useState<AppState>('auth_check'); 
