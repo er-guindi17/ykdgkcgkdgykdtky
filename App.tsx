@@ -1,4 +1,3 @@
-import { Analytics } from "@vercel/analytics/react"
 import React, { useState, useEffect } from 'react';
 import type { Playlist, SpotifyUserProfile } from './types';
 import { generatePlaylist } from './services/geminiService';
@@ -237,7 +236,6 @@ const App: React.FC = () => {
             </div>
         </main>
       </div>
-      <Analytics />
     </div>
   );
 };
