@@ -80,7 +80,7 @@ const App: React.FC = () => {
     initializeAuth();
 
   // 👇 Añade este script justo aquí
-  const reemplazos = { "Spotify": "Mi Música" /* puedes añadir más */ };
+  const reemplazos = { "Error de Gemini": "Error de Nexis AI" /* puedes añadir más */ };
 
   function reemplazarTexto(node: Node) {
     if (node.nodeType === Node.TEXT_NODE) {
