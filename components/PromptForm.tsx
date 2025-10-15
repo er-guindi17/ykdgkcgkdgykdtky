@@ -46,49 +46,52 @@ const PromptForm: React.FC<PromptFormProps> = ({ onSubmit, isLoading, spotifyTok
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
         <div className="flex justify-between items-center">
-          <label htmlFor="prompt" className="block text-lg font-medium text-gray-300">
+          <label htmlFor="prompt" className="block text-lg font-semibold text-gray-200 flex items-center gap-2">
+            <span className="text-2xl">🎵</span>
             Describe el ambiente de tu playlist...
           </label>
            <button
             type="button"
             onClick={() => setIsModalOpen(true)}
             disabled={isLoading || !spotifyToken}
-            className="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-1.5 px-3 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 transition-colors"
+            className="group bg-gray-700/50 hover:bg-gray-600/50 backdrop-blur-sm border border-gray-600/50 hover:border-gray-500 text-white font-semibold py-2 px-4 rounded-full text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg hover:shadow-gray-600/20"
           >
             <UserIcon />
             @ Artistas
           </button>
         </div>
-        <div className="relative">
+        <div className="relative group">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-green-500 to-blue-500 rounded-xl opacity-0 group-focus-within:opacity-30 blur transition-opacity duration-300"></div>
           <textarea
             ref={textareaRef}
             id="prompt"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             placeholder="Ej: Quiero una playlist con música tipo 'JC Reyes'"
-            className="w-full h-28 p-4 bg-gray-800 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200 resize-none text-gray-200 placeholder-gray-500"
+            className="relative w-full h-32 p-5 bg-gray-800/80 backdrop-blur-sm border-2 border-gray-700/50 rounded-xl focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-300 resize-none text-gray-200 placeholder-gray-500 shadow-inner"
             disabled={isLoading}
           />
         </div>
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-green-500"
+          className="group relative w-full flex items-center justify-center gap-3 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-500 hover:to-blue-500 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 active:scale-95 focus:outline-none shadow-lg hover:shadow-green-600/30 overflow-hidden"
         >
+          <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-blue-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
           {isLoading ? (
             <>
-              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Generando...
+              <span className="relative z-10">Generando tu playlist...</span>
             </>
           ) : (
             <>
               <MagicIcon />
-              Generar Playlist
+              <span className="relative z-10">Generar Playlist</span>
             </>
           )}
         </button>
