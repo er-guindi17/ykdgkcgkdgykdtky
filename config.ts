@@ -1,7 +1,7 @@
 // --- CONFIGURACIÓN DE CLAVES ---
 // Para desarrollo local, reemplaza los siguientes valores con tus propias claves.
 // Para producción (Vercel), la aplicación usará automáticamente las variables de entorno.
-export const API_KEY = process.env.API_KEY || 'AIzaSyCe1FVaVfQNqHfUsQlrO7LeSVST3zf-jzI';
+export const API_KEY = process.env.API_KEY || 'AIzaSyA0033P3Xznkd6mBQCQG2hUso8GmtW-nuI';
 export const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID || 'f99639a42c1d4868ae0dd5ba0c14c060';
 
 
